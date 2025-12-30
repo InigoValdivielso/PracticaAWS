@@ -763,28 +763,6 @@ curl https://hu0apd4dz6.execute-api.us-east-1.amazonaws.com/prod/items
 
 ---
 
-## ✅ Entrega y Validación
-
-### Requisitos para la entrega:
-
-1. ✅ Script `deploy.py` ejecutable sin errores
-2. ✅ Dashboard web funcional (muestra items)
-3. ✅ API `/items` devuelve JSON correcto
-4. ✅ API `/items/{store}` filtra correctamente
-5. ✅ Alertas SNS funcionan (email recibido con stock < 50)
-6. ✅ Script `destroy.py` limpia todos los recursos
-7. ✅ README con instrucciones claras y ejemplos
-
-### Evidencia a capturar:
-
-📷 **Captura de pantalla del dashboard web**  
-📷 **Salida del comando `curl` para `/items`**  
-📷 **Salida del comando `curl` para `/items/{store}`**  
-📷 **Email SNS recibido**  
-📷 **CloudWatch Logs mostrando ejecución**  
-
----
-
 ## 🎓 Conclusión
 
 Este proyecto demuestra una **arquitectura serverless profesional** completa:
@@ -800,39 +778,5 @@ Este proyecto demuestra una **arquitectura serverless profesional** completa:
 
 **Tiempo total**: ~5 minutos de despliegue + validación manual
 
-**Costo**: $0 (dentro del free tier de AWS Academy)
 
----
-
-## 📞 Soporte del Profesor
-
-Si hay problemas durante la ejecución:
-
-1. **Verifica el comando exacto**:
-   ```bash
-   python infra/deploy.py
-   ```
-
-2. **Revisa los logs de CloudWatch**:
-   ```bash
-   aws logs tail /aws/lambda/load_inventory --follow
-   ```
-
-3. **Valida credenciales**:
-   ```bash
-   aws sts get-caller-identity
-   ```
-
-4. **Comprueba que el archivo `deployment.json` existe**:
-   ```bash
-   cat infra/deployment.json
-   ```
-
----
-
-**Proyecto creado con ❤️ para demostrar arquitectura serverless profesional en AWS**
-
-**Última actualización**: Diciembre 2025  
-**Versión**: 1.0  
-**Autor**: Práctica Cloud Computing
 
