@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Inventario</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            padding: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .controls input, .controls select {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .controls button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .controls button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #667eea;
+            color: white;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+        
+        tbody tr {
+            transition: background 0.2s;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .stock-low {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .stock-ok {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            margin: 30px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Sistema de Inventario</h1>
+            <p>Gestión en tiempo real de productos y tiendas</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="totalItems">-</h3>
+                <p>Total Items</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalStores">-</h3>
+                <p>Tiendas</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="lowStock">-</h3>
+                <p>Stock Bajo (&lt;50)</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalUnits">-</h3>
+                <p>Unidades Totales</p>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="🔍 Buscar por item o tienda...">
+            <select id="storeFilter">
+                <option value="">Todas las tiendas</option>
+            </select>
+            <button onclick="loadInventory()">🔄 Actualizar</button>
+        </div>
+        
+        <div class="table-container">
+            <div id="loading" class="loading">Cargando inventario...</div>
+            <div id="error" class="error" style="display:none;"></div>
+            <table id="inventoryTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Tienda</th>
+                        <th>Producto</th>
+                        <th>Stock</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryBody">
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <p>Sistema de Inventario AWS Serverless | Última actualización: <span id="lastUpdate">-</span></p>
+        </div>
+    </div>
+    
+    <script>
+        const API_ENDPOINT = 'REPLACE_WITH_API_ENDPOINT';
+        let allItems = [];
+        
+        async function loadInventory(store = '') {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const table = document.getElementById('inventoryTable');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            table.style.display = 'none';
+            
+            try {
+                const url = store ? `${API_ENDPOINT}/items/${store}` : `${API_ENDPOINT}/items`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                allItems = data.items || [];
+                
+                displayInventory(allItems);
+                updateStats(allItems);
+                populateStoreFilter(allItems);
+                
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('es-ES');
+                
+            } catch (err) {
+                console.error('Error cargando inventario:', err);
+                error.textContent = `Error al cargar datos: ${err.message}. Verifica que la API esté desplegada correctamente.`;
+                error.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        }
+        
+        function displayInventory(items) {
+            const tbody = document.getElementById('inventoryBody');
+            const loading = document.getElementById('loading');
+            const table = document.getElementById('inventoryTable');
+            
+            tbody.innerHTML = '';
+            
+            if (items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;">No hay datos disponibles. Sube un archivo CSV al bucket S3.</td></tr>';
+            } else {
+                items.forEach(item => {
+                    const row = document.createElement('tr');
+                    const count = parseInt(item.Count);
+                    const stockClass = count < 50 ? 'stock-low' : 'stock-ok';
+                    const stockStatus = count < 50 ? '⚠️ Bajo' : '✅ OK';
+                    
+                    row.innerHTML = `
+                        <td><strong>${item.Store}</strong></td>
+                        <td>${item.Item}</td>
+                        <td class="${stockClass}">${count}</td>
+                        <td>${stockStatus}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            
+            loading.style.display = 'none';
+            table.style.display = 'table';
+        }
+        
+        function updateStats(items) {
+            const totalItems = items.length;
+            const stores = [...new Set(items.map(i => i.Store))];
+            const totalStores = stores.length;
+            const lowStock = items.filter(i => parseInt(i.Count) < 50).length;
+            const totalUnits = items.reduce((sum, i) => sum + parseInt(i.Count), 0);
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalStores').textContent = totalStores;
+            document.getElementById('lowStock').textContent = lowStock;
+            document.getElementById('totalUnits').textContent = totalUnits.toLocaleString();
+        }
+        
+        function populateStoreFilter(items) {
+            const stores = [...new Set(items.map(i => i.Store))].sort();
+            const select = document.getElementById('storeFilter');
+            
+            // Mantener la opción "Todas las tiendas"
+            select.innerHTML = '<option value="">Todas las tiendas</option>';
+            
+            stores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store;
+                option.textContent = store;
+                select.appendChild(option);
+            });
+        }
+        
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allItems.filter(item => 
+                item.Store.toLowerCase().includes(searchTerm) ||
+                item.Item.toLowerCase().includes(searchTerm)
+            );
+            displayInventory(filtered);
+        });
+        
+        document.getElementById('storeFilter').addEventListener('change', function(e) {
+            const store = e.target.value;
+            if (store) {
+                loadInventory(store);
+            } else {
+                displayInventory(allItems);
+            }
+        });
+        
+        // Cargar inventario al iniciar
+        loadInventory();
+        
+        // Actualizar cada 30 segundos
+        setInterval(() => loadInventory(), 30000);
+    </script>
+</body>
+</html>

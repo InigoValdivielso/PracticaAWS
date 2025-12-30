@@ -1,0 +1,16 @@
+{
+  "deployment_time": "2025-12-30T14:47:14.436977",
+  "region": "us-east-1",
+  "suffix": "inventory-main",
+  "bucket_uploads": "inventory-uploads-inventory-main",
+  "bucket_web": "inventory-web-inventory-main",
+  "table_name": "Inventory",
+  "lambda_load": "load_inventory",
+  "lambda_api": "get_inventory_api",
+  "lambda_notify": "notify_low_stock",
+  "api_id": "4kk42h9al0",
+  "api_endpoint": "https://4kk42h9al0.execute-api.us-east-1.amazonaws.com/prod",
+  "web_url": "http://inventory-web-inventory-main.s3-website-us-east-1.amazonaws.com",
+  "sns_topic_arn": "arn:aws:sns:us-east-1:992382394041:low-stock-inventory-main",
+  "iam_role": "lambda-inventory-role-inventory-main"
+}
